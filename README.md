@@ -1,22 +1,57 @@
 # BetterBART
 
-A really simple map and directions app for BART.
+BetterBART is a focused BART map, departures viewer, and trip planner. It keeps the original
+single-screen experience: choose an origin and destination, tap or drag between stations, and follow
+one clear instruction at a time.
 
-The official BART app is confusing, so I made this instead. It's one map, all 50 real stations, and directions that are easy to follow.
+## Run locally
 
-You can click on a station to see all incoming trains. You can also plan trips and get directions by selecting a start and end.
+```bash
+npm install
+npm run dev
+```
 
-## How it works
+Open [http://localhost:3000](http://localhost:3000). The app uses its mobile layout by default,
+matching the original. Use `/web` or `?view=web` for the desktop layout and `/mobile` or
+`?view=mobile` to force the mobile layout.
 
-Open it, tap where you are, tap where you're going. That's it.
+## Quality checks
 
-You get one clear instruction at a time, like:
+```bash
+npm run lint
+npm test
+npm run build
+```
 
-> Get on the **Richmond train** in **6 min** or at **11:45**
+`npm run check` runs all three commands in sequence. The production build is fully static and does
+not require a backend.
 
-> Get off in **4 stops** at **MacArthur** in **9 min**
+## Project structure
 
-## Images
-<img width="631" height="778" alt="Screenshot 2026-08-29 at 11 19 59 PM" src="https://github.com/user-attachments/assets/512b856b-2d10-42b6-8d33-b18db69b6bd7" />
-<img width="626" height="773" alt="Screenshot 2026-08-29 at 11 20 28 PM" src="https://github.com/user-attachments/assets/6046e4b0-e2e8-4cc8-a10c-ff6599a993c8" />
+```text
+src/
+├── app/                         Next.js layout, route, and global styles
+└── features/bart/
+    ├── components/              React-owned UI regions
+    ├── core/                    Projection, geometry, and route finding
+    ├── data/                    Stations and BART lines
+    └── runtime/                 SVG scene, gestures, arrivals, and trip UI
+```
 
+The React components own the stable, accessible document structure. The client runtime owns the
+highly coordinated SVG and live transit state. Keeping that imperative boundary intact preserves the
+exact visuals, pointer behavior, animation timing, and geolocation flow of the original app, while
+the network data and routing algorithms remain isolated and reusable.
+
+## Behavior preserved
+
+- All 50 stations and six displayed services
+- Pan, zoom, pinch, double-click zoom, and drag-to-plan gestures
+- Station search, selection, clear, reset, and swap controls
+- Simulated live departures and step-by-step trip directions
+- Route highlighting, animated direction markers, and line visibility toggles
+- Automatic geolocation dot and trip-step advancement
+- Desktop panel and draggable mobile bottom sheet
+
+The original [`index.html`](./index.html) remains in the repository as a visual and behavioral
+reference; Next.js serves the application from `src/`.

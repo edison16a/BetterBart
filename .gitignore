@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+
+# Local tooling and operating-system files
+.DS_Store
+*.log
+.env*
+!.env.example
+
+# Test coverage
+coverage/

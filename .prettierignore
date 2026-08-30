@@ -1,0 +1,6 @@
+.next/
+node_modules/
+index.html
+AGENTS.md
+CLAUDE.md
+package-lock.json

@@ -1,0 +1,18 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 96 96"
+  role="img"
+  aria-label="BetterBART BB monogram"
+>
+  <defs>
+    <path
+      id="letter-b"
+      fill-rule="evenodd"
+      d="M0 0h20c15 0 24 7 24 19 0 7-4 13-10 16 8 3 13 10 13 20 0 16-11 25-27 25H0V0Zm12 12v16h8c8 0 12-3 12-8s-4-8-12-8h-8Zm0 31v25h9c9 0 14-4 14-12s-5-13-14-13h-9Z"
+    />
+  </defs>
+  <g fill="#0079C1">
+    <use href="#letter-b" x="4" y="8" />
+    <use href="#letter-b" x="45" y="8" />
+  </g>
+</svg>

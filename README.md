@@ -17,5 +17,6 @@ You get one clear instruction at a time, like:
 > Get off in **4 stops** at **MacArthur** in **9 min**
 
 ## Images
+<img width="631" height="778" alt="Screenshot 2026-08-29 at 11 19 59 PM" src="https://github.com/user-attachments/assets/512b856b-2d10-42b6-8d33-b18db69b6bd7" />
+<img width="626" height="773" alt="Screenshot 2026-08-29 at 11 20 28 PM" src="https://github.com/user-attachments/assets/6046e4b0-e2e8-4cc8-a10c-ff6599a993c8" />
 
-<img width="631" height="784" alt="Screenshot 2026-08-29 at 11 19 29 PM" src="https://github.com/user-attachments/assets/1dfcfeae-d4a3-4eb5-917e-135582ebed97" />

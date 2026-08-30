@@ -4,6 +4,8 @@ BetterBART is a focused BART map, departures viewer, and trip planner. It keeps 
 single-screen experience: choose an origin and destination, tap or drag between stations, and follow
 one clear instruction at a time.
 
+https://betterbart.vercel.app/
+
 ## Run locally
 
 ```bash

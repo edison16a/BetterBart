@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { centeredMapView, pointMapView } from "../src/features/bart/core/camera.js";
 import { AT } from "../src/features/bart/core/geometry.js";
 import { route } from "../src/features/bart/core/routing.js";
 import { LINES, ST } from "../src/features/bart/data/network.js";
@@ -48,4 +49,33 @@ test("the live train simulator advances and returns finite ETAs", () => {
   assert.notEqual(simulator.trains[0].s, before);
   assert.equal(TRAIN_SPEED, 10);
   assert.ok(Number.isFinite(simulator.nextETA("MCAR", "red")));
+});
+
+test("camera views stay inside the map at desktop and mobile aspect ratios", () => {
+  for (const [viewportWidth, viewportHeight] of [
+    [1280, 800],
+    [390, 844],
+  ]) {
+    const centered = centeredMapView({
+      mapWidth: 1004,
+      mapHeight: 1154,
+      viewportWidth,
+      viewportHeight,
+    });
+    const nearEdge = pointMapView({
+      mapWidth: 1004,
+      mapHeight: 1154,
+      viewportWidth,
+      viewportHeight,
+      point: { x: 0, y: 0 },
+      width: 280,
+    });
+
+    for (const view of [centered, nearEdge]) {
+      assert.ok(view.x >= 0);
+      assert.ok(view.y >= 0);
+      assert.ok(view.x + view.w <= 1004);
+      assert.ok(view.y + view.h <= 1154);
+    }
+  }
 });

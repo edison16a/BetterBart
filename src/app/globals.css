@@ -471,6 +471,20 @@ input {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.showmore {
+  width: 100%;
+  margin-top: 9px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 12.5px;
+  font-weight: 700;
+  text-align: center;
+}
+.showmore:hover {
+  background: #2a3547;
+}
 .eta {
   font-family: var(--mono);
   font-size: 12.5px;

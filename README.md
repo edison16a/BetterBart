@@ -13,9 +13,9 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). The app uses its mobile layout by default,
-matching the original. Use `/web` or `?view=web` for the desktop layout and `/mobile` or
-`?view=mobile` to force the mobile layout.
+Open [http://localhost:3000](http://localhost:3000). The app automatically uses compact floating
+panels on desktop screens and the full-width bottom sheet on phones. Use `/web` or `?view=web` to
+force the desktop layout and `/mobile` or `?view=mobile` to force the mobile layout.
 
 ## Quality checks
 

@@ -11,6 +11,7 @@ import {
   kmBetween,
   tname,
 } from "@/features/bart/core/geometry";
+import { centeredMapView, pointMapView } from "@/features/bart/core/camera";
 import { IDX, route } from "@/features/bart/core/routing";
 import { LINES, LN, ST } from "@/features/bart/data/network";
 import { createMapScene } from "./createMapScene.js";
@@ -74,7 +75,7 @@ export function startBetterBart() {
     const x = X(lon),
       y = Y(lat);
     myPos = { x, y };
-    const inMap = x > -30 && x < W + 30 && y > -30 && y < H + 30;
+    const inMap = x >= 0 && x <= W && y >= 0 && y <= H;
     gLoc.setAttribute("opacity", inMap ? 1 : 0);
     const r = Math.max(9, Math.min(90, ((acc || 100) * PXKM) / 1000)); /* metres -> map px */
     [locAcc, locPulse, locDot].forEach((c) => {
@@ -95,9 +96,16 @@ export function startBetterBart() {
     navigator.geolocation.watchPosition(
       (p) => {
         const inMap = showLoc(p.coords.latitude, p.coords.longitude, p.coords.accuracy);
-        if (first && inMap) {
+        if (first) {
           first = false;
-          toast(`You're near ${ST[nearestStation()].n} — tap the blue dot to start there`);
+          if (inMap) {
+            flyToPoint(myPos, 280, 0.5);
+            if (!document.body.classList.contains("m")) {
+              toast(`You're near ${ST[nearestStation()].n} — tap the blue dot to start there`);
+            }
+          } else {
+            focusMapCenter();
+          }
         }
         if (inMap) autoAdvance(); /* your position drives the trip forward */
       },
@@ -114,8 +122,16 @@ export function startBetterBart() {
     vb.y = Math.min(Math.max(vb.y, -vb.h * 0.55), H - vb.h * 0.45);
     svg.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
   }
-  function fitAll() {
-    flyVB({ x: -14, y: -12, w: W + 28, h: H + 24 });
+  function focusMapCenter() {
+    const viewport = svg.getBoundingClientRect();
+    flyVB(
+      centeredMapView({
+        mapWidth: W,
+        mapHeight: H,
+        viewportWidth: viewport.width,
+        viewportHeight: viewport.height,
+      }),
+    );
   }
   function clientToWorld(cx, cy) {
     const r = svg.getBoundingClientRect();
@@ -163,11 +179,22 @@ export function startBetterBart() {
     };
     flyRAF = requestAnimationFrame(tick);
   }
-  function flyToStation(id, zw = 280) {
-    const p = P[id],
-      r = svg.getBoundingClientRect(),
-      h = zw * (r.height / Math.max(1, r.width));
-    flyVB({ x: p.x - zw / 2, y: p.y - h * 0.45, w: zw, h });
+  function flyToPoint(point, width = 280, verticalAnchor = 0.45) {
+    const viewport = svg.getBoundingClientRect();
+    flyVB(
+      pointMapView({
+        mapWidth: W,
+        mapHeight: H,
+        viewportWidth: viewport.width,
+        viewportHeight: viewport.height,
+        point,
+        width,
+        verticalAnchor,
+      }),
+    );
+  }
+  function flyToStation(id, width = 280) {
+    flyToPoint(P[id], width);
   }
 
   /* ================= POINTER: pan / tap / drag-to-plan ================= */
@@ -358,7 +385,9 @@ export function startBetterBart() {
   let sel = { a: null, b: null },
     trip = null,
     panelClosed = false,
-    stepIdx = 0;
+    stepIdx = 0,
+    departureStation = null,
+    departuresExpanded = false;
 
   const ina = document.getElementById("ina"),
     inb = document.getElementById("inb");
@@ -512,6 +541,8 @@ export function startBetterBart() {
   }
   function clearTrip() {
     clearRouteOnly();
+    departureStation = null;
+    departuresExpanded = false;
     sel = { a: null, b: null };
     syncSel();
   }
@@ -739,6 +770,11 @@ export function startBetterBart() {
     return `<span class="caps"><span class="cap" style="background:${LN[r.lid].color}">${r.m < 1 ? "Now" : Math.round(r.m) + " min"}</span><span class="cap t">${clock(r.dep)}</span></span>`;
   }
   function renderDepsPanel() {
+    if (departureStation !== sel.a) {
+      departureStation = sel.a;
+      departuresExpanded = false;
+    }
+
     ptitle.textContent = ST[sel.a].n;
     const rows = computeDeps();
     curSig = depSig(rows);
@@ -749,6 +785,7 @@ export function startBetterBart() {
     const h = rows[0],
       hc = LN[h.lid].color,
       hi = heroInfo(h);
+    const visibleRows = departuresExpanded ? rows : rows.slice(0, 3);
     pbody.innerHTML =
       `
     <div class="hero">
@@ -770,7 +807,7 @@ export function startBetterBart() {
         </g>
       </svg>
     </div>` +
-      rows
+      visibleRows
         .slice(1)
         .map(
           (r) => `
@@ -780,7 +817,15 @@ export function startBetterBart() {
       ${capsules(r)}
     </div>`,
         )
-        .join("");
+        .join("") +
+      (!departuresExpanded && rows.length > 3
+        ? `<button class="showmore" id="showmoredeps" aria-expanded="false">Show more</button>`
+        : "");
+
+    document.getElementById("showmoredeps")?.addEventListener("click", () => {
+      departuresExpanded = true;
+      renderDepsPanel();
+    });
   }
   function tickDeps() {
     const rows = computeDeps();
@@ -905,7 +950,7 @@ export function startBetterBart() {
     document.getElementById("stepnext").addEventListener("click", () => {
       if (stepIdx >= trip.steps.length - 1) {
         clearTrip();
-        fitAll();
+        focusMapCenter();
         return;
       }
       stepIdx++;
@@ -972,8 +1017,8 @@ export function startBetterBart() {
   }
   let forced = detectForced();
   function isMobile() {
-    return forced ? forced === "mobile" : true;
-  } /* phone UI by default; /web or #web for desktop */
+    return forced ? forced === "mobile" : window.matchMedia("(max-width: 720px)").matches;
+  } /* responsive by default; explicit view routes override the breakpoint */
   function applyMode() {
     document.body.classList.toggle("m", isMobile());
   }
@@ -987,5 +1032,5 @@ export function startBetterBart() {
   applyMode();
 
   /* ---------- boot ---------- */
-  fitAll();
+  focusMapCenter();
 }
